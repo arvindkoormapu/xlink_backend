@@ -1,0 +1,173 @@
+{
+    "openapi": "3.0.0",
+    "servers": [
+        {
+            "url": "http://localhost:5001"
+        }
+    ],
+    "info": {
+        "title": "Backend API",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/user-profile": {
+            "get": {
+                "summary": "Get all users profiles",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "data": {
+                                        "value": {
+                                            "success": true,
+                                            "users": [
+                                                {
+                                                    "_id": "62300ce8f9eb2f2e87daf523",
+                                                    "creator": "621c54e1a32af796c60aa4c9",
+                                                    "event_id": "621f30e10e6cfc6dcf36c146",
+                                                    "label": "testMail",
+                                                    "createdAt": "2022-03-15T03:50:00.910Z",
+                                                    "updatedAt": "2022-03-15T03:50:00.910Z",
+                                                    "__v": 0
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/vendor": {
+            "get": {
+                "tags": [
+                    "Vendor"
+                ],
+                "summary": "Get all Vendors",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "data": {
+                                        "value": {
+                                            "success": true,
+                                            "data": [
+                                                {
+                                                    "vendorid": 1,
+                                                    "name": "Dive Adventures",
+                                                    "image": "image_url_1",
+                                                    "url": "http://diveadventures.com",
+                                                    "city": "Ocean City",
+                                                    "area": "Bay Area",
+                                                    "street": "Coral Street",
+                                                    "building": "Building A",
+                                                    "zipcode": "12345",
+                                                    "contactnumber": "123-456-7890",
+                                                    "officenumber": "098-765-4321",
+                                                    "emailaddress1": "contact@diveadventures.com",
+                                                    "emailaddress2": "info@diveadventures.com"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/vendor/create": {
+            "post": {
+                "summary": "Create a new user",
+                "tags": [
+                    "Vendor"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "description": "The user's name"
+                                    },
+                                    "emailaddress1": {
+                                        "type": "string",
+                                        "description": "The user's email"
+                                    },
+                                    "contactnumber": {
+                                        "type": "string",
+                                        "description": "The user's phone number"
+                                    },
+                                    "url": {
+                                        "type": "string",
+                                        "description": "The user's email"
+                                    },
+                                    "city": {
+                                        "type": "string",
+                                        "description": "The user's office number"
+                                    },
+                                    "image": {
+                                        "type": "string",
+                                        "format": "binary",
+                                        "description": "File to upload"
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "emailaddress1",
+                                    "contactnumber",
+                                    "url",
+                                    "city",
+                                    "image"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "The user was successfully created",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "data": {
+                                        "value": {
+                                            "success": true,
+                                            "data": [
+                                                {
+                                                    "vendorid": 1,
+                                                    "name": "Dive Adventures",
+                                                    "image": "image_url_1",
+                                                    "url": "http://diveadventures.com",
+                                                    "city": "Ocean City",
+                                                    "area": "Bay Area",
+                                                    "street": "Coral Street",
+                                                    "building": "Building A",
+                                                    "zipcode": "12345",
+                                                    "contactnumber": "123-456-7890",
+                                                    "officenumber": "098-765-4321",
+                                                    "emailaddress1": "contact@diveadventures.com",
+                                                    "emailaddress2": "info@diveadventures.com"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
