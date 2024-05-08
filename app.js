@@ -15,13 +15,7 @@ const app = express();
 
 // Security middlewares
 app.use(helmet());
-
-const corsOptions = {
-  origin: 'https://xlink-dashboard.uat.blankbot.org',
-  optionsSuccessStatus: 200,
-  credentials: true, // Allow cookies and authentication headers in CORS
-};
-app.use(cors(corsOptions));
+app.use(cors());
 
 // Morgan setup for logging requests
 app.use(morgan('dev'));
