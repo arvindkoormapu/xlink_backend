@@ -46,6 +46,9 @@ firebase.initializeApp({
 });
 
 // Import routes
+app.get('/', (req, res) => {
+  res.send('API is running!');
+});
 const routes = require('./src/routes');
 app.use("/uploads", express.static("uploads"))
 app.use('/api', routes);
