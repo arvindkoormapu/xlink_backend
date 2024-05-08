@@ -15,7 +15,11 @@ const app = express();
 
 // Security middlewares
 app.use(helmet());
-app.use(cors());
+
+const corsOptions = {
+  origin: 'https://xlink-dashboard.uat.blankbot.org'
+};
+app.use(cors(corsOptions));
 
 // Morgan setup for logging requests
 app.use(morgan('dev'));
