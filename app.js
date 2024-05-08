@@ -17,7 +17,9 @@ const app = express();
 app.use(helmet());
 
 const corsOptions = {
-  origin: 'https://xlink-dashboard.uat.blankbot.org'
+  origin: 'https://xlink-dashboard.uat.blankbot.org',
+  optionsSuccessStatus: 200,
+  credentials: true, // Allow cookies and authentication headers in CORS
 };
 app.use(cors(corsOptions));
 
