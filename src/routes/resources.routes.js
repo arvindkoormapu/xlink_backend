@@ -4,7 +4,7 @@ const checkAuth = require('../../checkAuth');
 
 const resourcesController = require('../controllers/resources.controller');
 
-router.get('/', checkAuth, resourcesController.getResources);
+router.get('/:vendorId', checkAuth, resourcesController.getResources);
 router.post('/', checkAuth, resourcesController.addResources);
 router.put('/:id', resourcesController.updateResources);
 

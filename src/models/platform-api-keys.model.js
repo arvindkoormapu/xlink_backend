@@ -23,7 +23,7 @@ const getPlatformApiKeys = async (id) => {
   const result = await DB.query(
     `SELECT *
      FROM platformAPIKeys
-     WHERE userprofileid = $1`,
+     WHERE platformid = $1`,
     [id]
   );
   return result.rows;
@@ -33,10 +33,10 @@ const addPlatformApiKey = async (
   name,
   whitelisted_ips,
   description,
-  userprofileid
+  platformid
 ) => {
   const newObj = await DB.query(
-    "INSERT INTO platformAPIKeys (name, apikey, secret, whitelisted_ips, description, active, userprofileid, seen, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW()) RETURNING *",
+    "INSERT INTO platformAPIKeys (name, apikey, secret, whitelisted_ips, description, active, platformid, seen, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW()) RETURNING *",
     [
       name,
       generateApiKey(),
@@ -44,7 +44,7 @@ const addPlatformApiKey = async (
       JSON.stringify(whitelisted_ips),
       description,
       true,
-      userprofileid,
+      platformid,
       false
     ]
   );
@@ -72,9 +72,20 @@ const updateActiveState = async (active, id) => {
   return result.rows;
 };
 
+const updateWhitelistIps = async (whitelisted_ips, id) => {
+  const result = await DB.query(
+    `UPDATE platformAPIKeys
+     SET whitelisted_ips = $1
+     WHERE id = $2`,
+    [JSON.stringify(whitelisted_ips), id]
+  );
+  return result.rows;
+};
+
 module.exports = {
   getPlatformApiKeys,
   addPlatformApiKey,
   updateSeenState,
   updateActiveState,
+  updateWhitelistIps
 };

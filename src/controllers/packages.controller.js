@@ -75,8 +75,19 @@ const update = async (req, res) => {
   }
 };
 
+const deletePackage = async (req, res) => {
+  try {
+    const id = req.params.id;
+    await PackagesModel.deletePackage(id);
+    res.status(200).json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 module.exports = {
   get,
   create,
   update,
+  deletePackage
 };

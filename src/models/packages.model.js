@@ -120,8 +120,46 @@ const update = async (
   await DB.query(query, values);
 };
 
+const deletePackage = async (packageid) => {
+  const client = await DB.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    // Delete from sessions
+    const deleteSessionsQuery = `
+      DELETE FROM sessions
+      USING schedules
+      WHERE sessions.scheduleid = schedules.scheduleid
+        AND schedules.packageid = $1;
+    `;
+    await client.query(deleteSessionsQuery, [packageid]);
+
+    // Delete from schedules
+    const deleteSchedulesQuery = `
+      DELETE FROM schedules
+      WHERE packageid = $1;
+    `;
+    await client.query(deleteSchedulesQuery, [packageid]);
+
+    // Delete from package
+    const deletePackageQuery = `
+      DELETE FROM package
+      WHERE packageid = $1;
+    `;
+    await client.query(deletePackageQuery, [packageid]);
+
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+  } finally {
+    client.release();
+  }
+}
+
 module.exports = {
   get,
   create,
   update,
+  deletePackage
 };

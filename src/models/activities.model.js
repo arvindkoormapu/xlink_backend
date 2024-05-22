@@ -1,24 +1,24 @@
 const { DB, s3 } = require("../../config");
 
-const get = async (id) => {
-  const vendorProfileResult = await DB.query(
-    `SELECT vup.*, vp.*
-          FROM vendoruserprofile vup
-          JOIN vendorprofile vp ON vup.vendorid = vp.vendorid
-          WHERE vup.userprofileid = $1`,
-    [id]
-  );
+const get = async (vendorProfileId) => {
+  // const vendorProfileResult = await DB.query(
+  //   `SELECT vup.*, vp.*
+  //         FROM vendoruserprofile vup
+  //         JOIN vendorprofile vp ON vup.vendorid = vp.vendorid
+  //         WHERE vup.userprofileid = $1`,
+  //   [id]
+  // );
 
-  const vendorProfileIds = vendorProfileResult.rows.map((row) => row.vendorid);
-  if (!Array.isArray(vendorProfileIds)) {
-    throw new Error("ids must be an array");
-  }
+  // const vendorProfileIds = vendorProfileResult.rows.map((row) => row.vendorid);
+  // if (!Array.isArray(vendorProfileIds)) {
+  //   throw new Error("ids must be an array");
+  // }
 
   const result = await DB.query(
     `SELECT *
        FROM activity
-       WHERE vendorprofileid = ANY($1)`,
-    [vendorProfileIds]
+       WHERE vendorprofileid = $1`,
+    [vendorProfileId]
   );
   return result.rows;
 };
@@ -69,7 +69,7 @@ const update = async (
     advertisedduration,
     advertisedprice,
     JSON.stringify(highlights),
-    location
+    location,
   ];
 
   let featuredImageUrl = "";
@@ -81,7 +81,7 @@ const update = async (
         Bucket: process.env.S3_BUCKET_NAME,
         Key: `featured_${Date.now()}_${file.originalname}`,
         Body: file.buffer,
-        ContentType: file.mimetype
+        ContentType: file.mimetype,
       })
       .promise();
     featuredImageUrl = s3Response.Location;
@@ -90,18 +90,22 @@ const update = async (
   }
 
   if (files.gallery && files.gallery.length) {
-    const galleryImageUrls = await Promise.all(files.gallery.map(async (file) => {
-      const s3Response = await s3.upload({
-        Bucket: process.env.S3_BUCKET_NAME,
-        Key: `gallery_${Date.now()}_${file.originalname}`,
-        Body: file.buffer,
-        ContentType: file.mimetype
-      }).promise();
-      return s3Response.Location;
-    }));
-  
+    const galleryImageUrls = await Promise.all(
+      files.gallery.map(async (file) => {
+        const s3Response = await s3
+          .upload({
+            Bucket: process.env.S3_BUCKET_NAME,
+            Key: `gallery_${Date.now()}_${file.originalname}`,
+            Body: file.buffer,
+            ContentType: file.mimetype,
+          })
+          .promise();
+        return s3Response.Location;
+      })
+    );
+
     const galleryJson = JSON.stringify(galleryImageUrls);
-    values.push(galleryJson); 
+    values.push(galleryJson);
     query += `, gallery = $11`;
   }
 
@@ -112,8 +116,58 @@ const update = async (
   await DB.query(query, values);
 };
 
+const deleteActivity = async (activityid) => {
+  const client = await DB.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    // Delete from sessions
+    const deleteSessionsQuery = `
+      DELETE FROM sessions
+      USING schedules, package
+      WHERE sessions.scheduleid = schedules.scheduleid
+        AND schedules.packageid = package.packageid
+        AND package.activityid = $1;
+    `;
+    await client.query(deleteSessionsQuery, [activityid]);
+
+    // Delete from schedules
+    const deleteSchedulesQuery = `
+      DELETE FROM schedules
+      USING package
+      WHERE schedules.packageid = package.packageid
+        AND package.activityid = $1;
+    `;
+    await client.query(deleteSchedulesQuery, [activityid]);
+
+    // Delete from package
+    const deletePackageQuery = `
+      DELETE FROM package
+      WHERE activityid = $1;
+    `;
+    await client.query(deletePackageQuery, [activityid]);
+
+    // Finally, delete from activity
+    const deleteActivityQuery = `
+      DELETE FROM activity
+      WHERE activityid = $1;
+    `;
+    await client.query(deleteActivityQuery, [activityid]);
+
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Error executing query', err.stack);
+    res.status(500).send('Error deleting records');
+  } finally {
+    client.release();
+  }
+};
+
 module.exports = {
   get,
   create,
   update,
+  deleteActivity,
 };

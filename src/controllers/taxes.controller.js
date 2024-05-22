@@ -2,8 +2,7 @@ const TaxesModel = require("../models/taxes.model");
 
 const getTaxes = async (req, res) => {
   try {
-    const user = req.user;
-    const vendors = await TaxesModel.getTaxes(user.userprofileid);
+    const vendors = await TaxesModel.getTaxes(req.params.vendorId);
     res.json({ success: true, data: vendors });
   } catch (err) {
     console.log(err);

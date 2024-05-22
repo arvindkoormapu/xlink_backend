@@ -2,8 +2,7 @@ const AddonsModel = require("../models/addons.model");
 
 const getAddons = async (req, res) => {
   try {
-    const user = req.user;
-    const addons = await AddonsModel.getAddons(user.userprofileid);
+    const addons = await AddonsModel.getAddons(req.params.vendorId);
     res.json({ success: true, data: addons });
   } catch (err) {
     console.log(err);

@@ -18,15 +18,16 @@ const getVendorProfiles = async (req, res) => {
 const addVendor = async (req, res) => {
     try {
         const user = req.user
-        const { name, emailaddress1, contactnumber, url, city } = req.body;
-        const image = req.file.path
+        const { name, emailaddress1, emailaddress2, contactnumber, officenumber, url, city, area, street, building, zipcode } = req.body;
+        const image = req.file
 
         if (user.roleid == 1) {
-            const newObj = await VendorModel.addVendorFromAdmin(name, emailaddress1, contactnumber, url, city, image);
+            const newObj = await VendorModel.addVendorFromAdmin(name, emailaddress1, emailaddress2, contactnumber, officenumber, url, city, area, street, building, zipcode, image);
             return res.status(201).json({ success: true, data: newObj });
         }
 
-        const newObj = await VendorModel.addVendor(name, emailaddress1, contactnumber, url, city, image, user.userprofileid);
+        const newObj = await VendorModel.addVendor(name, emailaddress1, emailaddress2, contactnumber, officenumber, url, city, area, street, building, zipcode, image, user.userprofileid);
+        console.log('newObj', newObj)
         return res.status(201).json({ success: true, data: newObj });
 
     } catch (err) {
@@ -38,11 +39,11 @@ const addVendor = async (req, res) => {
 const updateVendor = async (req, res) => {
     try {
         const id = req.params.id;
-        const { name, emailaddress1, contactnumber, url, city } = req.body;
-        const image = req.file ? req.file.path : null
-        await VendorModel.updateVendor(id, name, emailaddress1, contactnumber, url, city, image);
+        const { name, emailaddress1, emailaddress2, contactnumber, officenumber, url, city, area, street, building, zipcode } = req.body;
+        const image = req.file
+        const newObj = await VendorModel.updateVendor(id, name, emailaddress1, emailaddress2, contactnumber, officenumber, url, city, area, street, building, zipcode, image);
 
-        res.status(200).json({ success: true });
+        res.status(200).json({ success: true, data: newObj });
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ success: false, message: err.message });

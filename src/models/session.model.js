@@ -38,113 +38,6 @@ async function insertSchedule(scheduleData) {
   }
 }
 
-// async function insertSessionsFromSchedule(schedule, totalquantity) {
-//   let dayStartTime = moment(schedule.starttime);
-//   let dayEndTime = moment(schedule.endtime);
-
-//   // Calculate the end of the first day or the overall end time, whichever is sooner
-//   let dailyEndTime = moment(dayStartTime)
-//     .hour(dayEndTime.hour())
-//     .minute(dayEndTime.minute())
-//     .second(dayEndTime.second());
-
-//   const interval = parseInt(schedule.interval, 10); // Interval in minutes
-
-//   while (dayStartTime < dayEndTime) {
-//     let nextTime = dayStartTime.clone().add(interval, "minutes");
-
-//     // Check if the next slot exceeds the set daily end time or the overall end time
-//     if (nextTime > dailyEndTime || nextTime > dayEndTime) {
-//       // If it's the same day and we've reached the end time, stop creating sessions for this day
-//       dayStartTime.add(1, "days").set({
-//         hour: schedule.starttime.split(" ")[1].split(":")[0],
-//         minute: schedule.starttime.split(" ")[1].split(":")[1],
-//         second: schedule.starttime.split(" ")[1].split(":")[2],
-//       }); // Set start time to the beginning of the next valid day
-//       dailyEndTime = dayStartTime
-//         .clone()
-//         .hour(dayEndTime.hour())
-//         .minute(dayEndTime.minute())
-//         .second(dayEndTime.second());
-//       if (dailyEndTime > dayEndTime) {
-//         dailyEndTime = dayEndTime.clone();
-//       }
-//       continue; // Skip to next day
-//     }
-
-//     const duration = nextTime.diff(dayStartTime, "minutes");
-//     const timeslot = dayStartTime.format("YYYY-MM-DD HH:mm");
-//     const sessionData = {
-//       scheduleId: schedule.scheduleid,
-//       packageId: schedule.packageid,
-//       timeslot: timeslot,
-//       totalQuantity: totalquantity,
-//       duration: duration,
-//     };
-
-//     await insertSession(sessionData);
-
-//     dayStartTime = nextTime; // Move startTime to the next slot
-//   }
-// }
-
-// async function insertSessionsFromSchedule(schedule, totalquantity) {
-//   let dayStartTime = moment(schedule.starttime);
-//   let dayEndTime = moment(schedule.endtime);
-
-//   const selectedDays = schedule.days.map(day => day.toLowerCase());  // Normalize days to lowercase for comparison
-
-//   // Calculate the end of the first day or the overall end time, whichever is sooner
-//   let dailyEndTime = moment(dayStartTime)
-//     .hour(dayEndTime.hour())
-//     .minute(dayEndTime.minute())
-//     .second(dayEndTime.second());
-
-//   const interval = parseInt(schedule.interval, 10); // Interval in minutes
-
-//   while (dayStartTime < dayEndTime) {
-//     // Check if the current day is a selected day
-//     if (!selectedDays.includes(dayStartTime.format('dddd').toLowerCase())) {
-//       dayStartTime.add(1, 'days').startOf('day');  // Skip to the next day at start
-//       dailyEndTime = dayStartTime.clone()
-//         .hour(dayEndTime.hour())
-//         .minute(dayEndTime.minute())
-//         .second(dayEndTime.second());
-//       continue; // Go to the next iteration of the loop
-//     }
-
-//     let nextTime = dayStartTime.clone().add(interval, "minutes");
-
-//     // Check if the next slot exceeds the set daily end time or the overall end time
-//     if (nextTime > dailyEndTime) {
-//       // If it's the same day and we've reached the end time, stop creating sessions for this day
-//       dayStartTime.add(1, "days").startOf('day'); // Set start time to the beginning of the next valid day
-//       dailyEndTime = dayStartTime.clone()
-//         .hour(dayEndTime.hour())
-//         .minute(dayEndTime.minute())
-//         .second(dayEndTime.second());
-//       if (dailyEndTime > dayEndTime) {
-//         dailyEndTime = dayEndTime.clone();
-//       }
-//       continue; // Skip to next day
-//     }
-
-//     const duration = nextTime.diff(dayStartTime, "minutes");
-//     const timeslot = dayStartTime.format("YYYY-MM-DD HH:mm");
-//     const sessionData = {
-//       scheduleId: schedule.scheduleid,
-//       packageId: schedule.packageid,
-//       timeslot: timeslot,
-//       totalQuantity: totalquantity,
-//       duration: duration,
-//     };
-
-//     await insertSession(sessionData);
-
-//     dayStartTime = nextTime; // Move startTime to the next slot
-//   }
-// }
-
 async function insertSessionsFromSchedule(schedule, totalquantity) {
   const startHour = moment(schedule.starttime).hour();
   const startMinute = moment(schedule.starttime).minute();
@@ -328,7 +221,36 @@ const get = async (id) => {
   return result.rows;
 };
 
+const deleteSession = async (scheduleid) => {
+  const client = await DB.connect();
+
+  try {
+    await client.query('BEGIN');
+
+    // Delete from sessions
+    const deleteSessionsQuery = `
+      DELETE FROM sessions
+      WHERE scheduleid = $1;
+    `;
+    await client.query(deleteSessionsQuery, [scheduleid]);
+
+    // Delete from schedules
+    const deleteSchedulesQuery = `
+      DELETE FROM schedules
+      WHERE scheduleid = $1;
+    `;
+    await client.query(deleteSchedulesQuery, [scheduleid]);
+
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+  } finally {
+    client.release();
+  }
+}
+
 module.exports = {
   create,
   get,
+  deleteSession
 };

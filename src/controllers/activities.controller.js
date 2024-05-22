@@ -2,8 +2,7 @@ const ActivitiesModel = require("../models/activities.model");
 
 const get = async (req, res) => {
   try {
-    const user = req.user;
-    const activities = await ActivitiesModel.get(user.userprofileid);
+    const activities = await ActivitiesModel.get(req.params.vendorId);
     res.json({ success: true, data: activities });
   } catch (err) {
     console.log(err);
@@ -66,8 +65,19 @@ const update = async (req, res) => {
   }
 };
 
+const deleteActivity = async (req, res) => {
+  try {
+    const id = req.params.id;
+    await ActivitiesModel.deleteActivity(id);
+    res.status(200).json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 module.exports = {
   get,
   create,
   update,
+  deleteActivity,
 };

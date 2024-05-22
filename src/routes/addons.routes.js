@@ -4,7 +4,7 @@ const checkAuth = require('../../checkAuth');
 
 const addonsController = require('../controllers/addons.controller');
 
-router.get('/', checkAuth, addonsController.getAddons);
+router.get('/:vendorId', checkAuth, addonsController.getAddons);
 router.post('/', checkAuth, addonsController.addAddons);
 router.put('/:id', addonsController.updateAddons);
 

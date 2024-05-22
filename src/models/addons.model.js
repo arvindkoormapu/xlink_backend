@@ -1,24 +1,11 @@
 const { DB } = require("../../config");
 
-const getAddons = async (id) => {
-  const vendorProfileResult = await DB.query(
-    `SELECT vup.*, vp.*
-      FROM vendoruserprofile vup
-      JOIN vendorprofile vp ON vup.vendorid = vp.vendorid
-      WHERE vup.userprofileid = $1`,
-    [id]
-  );
-
-  const vendorProfileIds = vendorProfileResult.rows.map((row) => row.vendorid);
-  if (!Array.isArray(vendorProfileIds)) {
-    throw new Error("ids must be an array");
-  }
-
+const getAddons = async (vendorProfileId) => {
   const result = await DB.query(
     `SELECT *
       FROM addons
-      WHERE vendorprofileid = ANY($1)`,
-    [vendorProfileIds]
+      WHERE vendorprofileid = $1`,
+    [vendorProfileId]
   );
 
   return result.rows;

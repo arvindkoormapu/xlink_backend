@@ -2,8 +2,7 @@ const ResourcesModel = require("../models/resources.model");
 
 const getResources = async (req, res) => {
   try {
-    const user = req.user;
-    const resources = await ResourcesModel.getResources(user.userprofileid);
+    const resources = await ResourcesModel.getResources(req.params.vendorId);
     res.json({ success: true, data: resources });
   } catch (err) {
     console.log(err);
