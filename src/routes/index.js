@@ -13,6 +13,7 @@ const categoriesRoutes = require('./categories.routes');
 const activitiesRoutes = require('./activities.routes');
 const packagesRoutes = require('./packages.routes');
 const sessionRoutes = require('./session.routes');
+const ticketsRoutes = require('./tickets.routes');
 
 router.use('/auth', authRoutes);
 router.use('/user-profile', userRoutes);
@@ -26,5 +27,6 @@ router.use('/categories', categoriesRoutes);
 router.use('/activities', activitiesRoutes);
 router.use('/packages', packagesRoutes);
 router.use('/session', sessionRoutes);
+router.use('/tickets', ticketsRoutes);
 
 module.exports = router;

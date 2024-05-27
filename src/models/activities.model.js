@@ -1,23 +1,13 @@
 const { DB, s3 } = require("../../config");
 
 const get = async (vendorProfileId) => {
-  // const vendorProfileResult = await DB.query(
-  //   `SELECT vup.*, vp.*
-  //         FROM vendoruserprofile vup
-  //         JOIN vendorprofile vp ON vup.vendorid = vp.vendorid
-  //         WHERE vup.userprofileid = $1`,
-  //   [id]
-  // );
-
-  // const vendorProfileIds = vendorProfileResult.rows.map((row) => row.vendorid);
-  // if (!Array.isArray(vendorProfileIds)) {
-  //   throw new Error("ids must be an array");
-  // }
-
   const result = await DB.query(
-    `SELECT *
+    `SELECT activity.*, 
+            COALESCE(json_agg(package.*) FILTER (WHERE package.activityid IS NOT NULL), '[]') AS packages
        FROM activity
-       WHERE vendorprofileid = $1`,
+       LEFT JOIN package ON activity.activityid = package.activityid
+       WHERE activity.vendorprofileid = $1
+       GROUP BY activity.activityid`,
     [vendorProfileId]
   );
   return result.rows;
